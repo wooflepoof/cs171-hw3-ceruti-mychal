@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title></title>
+
+    <script src="../libs/jquery-1.10.1.js"></script>
+    <script src="../libs/jquery.xdomainajax.js"></script>
+    <script src="../libs/d3.v3.min.js"></script>
+    <script src="../libs/FileSaver.js"></script>
+</head>
+<body>
+
+<script>
+    var convertToInt;
+
+/*    $.ajax({
+        url: "http://en.wikipedia.org/wiki/World_population_estimates",
+        type: 'GET',
+        cache: false,
+        success: function(data) {
+            var root,allData, body, table;
+            root = $("<div></div>")
+            root.html(data.responseText)
+
+            var content = root.find("#content"); // find all the nodes that have ID "content"
+            var h2s = content.find(".mw-headline"); // search in all "content" nodes for nodes of class ".mw-headline"
+
+            $.each(h2s, function(index, value) {
+                console.log($(value).text()); // print text
+            });
+			
+			saveToFile(["Hello World"],"test.txt")
+        },
+        error: function() {
+            return console.log("error");
+        }
+    }); */
+	
+	$.ajax({
+		url: "http://en.wikipedia.org/wiki/World_population_estimates",
+        type: 'GET',
+        cache: false,
+        success: function(data) {
+		
+            var root,allData, body, table;
+            root = $("<div></div>")
+            root.html(data.responseText)
+		
+			//find the table (NOTE_TO_SELF: have the program search for the proper table by id or something in future)	
+			var getTable = root.find("table.wikitable");
+			
+			//select the table rows
+			var getRows = getTable.find("tr").each(
+				function(index, value){
+					$(this).find('th:gt(5)').remove();
+					$(this).find('td:gt(5)').remove();
+				});
+				
+			getRows.find("td:gt(0)").each(
+				function(index, value){
+					if ((($(value).text()).length) > 0){
+						convertToInt(($(value).text()));
+						console.log(this);
+					}
+				});	
+			
+			var rowData = getRows
+			
+			console.log(rowData);
+			
+			$.each(rowData, function(index, value) {
+				console.log($(value).text()); // print text
+            });
+			
+			//saveToFile(arrayOfLines, "popData.csv")
+			
+        },
+        error: function() {
+            return console.log("error");
+        }
+    });
+
+
+    convertToInt = function(s) {
+        return parseInt(s.replace(/,/g, ""), 10);
+    };
+	
+    /* takes an array of strings
+       and writes them line by line into a file given by filename
+     */
+    var saveToFile = function(arrayOfLines, fileName) {
+       /* adds linebreaks at the end*/
+       var blob, blobText;
+       blobText = arrayOfLines.map(function(d) {
+         if (d.endsWith("\n")) {
+           return d;
+         } else {
+           return d + "\n";
+         }
+       });
+       blob = new Blob(blobText, {
+         type: "text/plain;charset=utf-8"
+       });
+       return saveAs(blob, fileName);
+     };
+
+     String.prototype.endsWith = function(suffix) {
+       return this.indexOf(suffix, this.length - suffix.length) !== -1;
+     };
+	
+
+
+
+</script>
+
+
+</body>
+</html>
