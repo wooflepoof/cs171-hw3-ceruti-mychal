@@ -13,34 +13,14 @@
 <script>
     var convertToInt;
 
-/*    $.ajax({
-        url: "http://en.wikipedia.org/wiki/World_population_estimates",
-        type: 'GET',
-        cache: false,
-        success: function(data) {
-            var root,allData, body, table;
-            root = $("<div></div>")
-            root.html(data.responseText)
-
-            var content = root.find("#content"); // find all the nodes that have ID "content"
-            var h2s = content.find(".mw-headline"); // search in all "content" nodes for nodes of class ".mw-headline"
-
-            $.each(h2s, function(index, value) {
-                console.log($(value).text()); // print text
-            });
-			
-			saveToFile(["Hello World"],"test.txt")
-        },
-        error: function() {
-            return console.log("error");
-        }
-    }); */
-	
 	$.ajax({
 		url: "http://en.wikipedia.org/wiki/World_population_estimates",
         type: 'GET',
         cache: false,
         success: function(data) {
+		
+			wordsArray = new Array();
+			wordsArray[0] = "year,USCensus,PopulationBureau,UN,HYDE,Maddison"; //Thanks Mimi!(@488);
 		
             var root,allData, body, table;
             root = $("<div></div>")
@@ -48,32 +28,39 @@
 		
 			//find the table (NOTE_TO_SELF: have the program search for the proper table by id or something in future)	
 			var getTable = root.find("table.wikitable");
+
+			/* Select the table rows and for each row(start with 0)...*/
+			var getRows = getTable.find("tr:gt(9)").each(function(index, value){
+					var lineArray = [];
+					/* Select the first 6 td" elements columns and iterate over them*/	
+					$(this).find('td:lt(6)')
+					.each(function(index, value){
+						if ($(value).text().length > 0){
+							return lineArray.push(convertToInt(($(value).text())));
+						}
+						/*Push empty cells to the array*/
+						else{
+							return lineArray.push('');
+						}
+					});
 			
-			//select the table rows
-			var getRows = getTable.find("tr").each(
-				function(index, value){
-					$(this).find('th:gt(5)').remove();
-					$(this).find('td:gt(5)').remove();
-				});
+				/* ignore the empty rows...(I know it's a little hack-ey, but time is running short :-/ */
+				var counter = 0
 				
-			getRows.find("td:gt(0)").each(
-				function(index, value){
-					if ((($(value).text()).length) > 0){
-						convertToInt(($(value).text()));
-						console.log(this);
+				for (var i = 1; i < lineArray.length; i++){
+					if ((lineArray[i].toString().length) != 0){
+						counter = counter += 1 ;
 					}
-				});	
+				};
+
+				if (counter != 0){
+						wordsArray.push(lineArray.toString());
+						counter = 0
+				};
+			});
 			
-			var rowData = getRows
-			
-			console.log(rowData);
-			
-			$.each(rowData, function(index, value) {
-				console.log($(value).text()); // print text
-            });
-			
-			//saveToFile(arrayOfLines, "popData.csv")
-			
+		/*Save the file*/
+		saveToFile(wordsArray, "popData.csv")
         },
         error: function() {
             return console.log("error");
