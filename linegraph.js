@@ -31,17 +31,31 @@
         });
 
 
-    d3.csv("timeline.csv", function(data) {
+    d3.csv("popData.csv", function(data) {
+		return {
+			year: +data.year,
+			
+			USCensus: data.USCensus,
+			
+			PopulationBureau: data.PopulationBureau,
+			
+			UN: data.UN,
+			
+			HYDE: data.HYDE,
+			
+			Maddison: data.Maddison
+			};
+	}, function(error, rows) {
 
-        // convert your csv data and add it to dataSet
-
-        return createVis();
+        return createVis(rows);
     });
 
-    createVis = function() {
+    createVis = function(rows) {
+	
+
         var xAxis, xScale, yAxis,  yScale;
 
-          xScale = d3.scale.linear().domain([0,100]).range([0, bbVis.w]);  // define the right domain generically
+          xScale = d3.scale.linear().domain([yearMinMax]).range([0, bbVis.w]);  // define the right domain generically
 
 		  // example that translates to the bottom left of our vis space:
 		  var visFrame = svg.append("g").attr({
@@ -50,14 +64,36 @@
 			  
 		  });
 		  
+		  console.log(rows);
+		  
 		  visFrame.append("rect");
 		  //....
+		  var yearMinMax = d3.extent(rows, function(d) {return d.year});
+		  console.log(yearMinMax);
 		  
-//        yScale = .. // define the right y domain and range -- use bbVis
-
-//        xAxis = ..
-//        yAxis = ..
+          yScale = d3.scale.linear().domain([200,0]).range([0, bbVis.h]);
+		  
+		  xAxis = d3.svg.axis()
+		  .scale(xScale)
+		  .orient("bottom");
+		  
+          yAxis = d3.svg.axis()
+		  .scale(yScale)
+		  .orient("left")
+		  .ticks(5);
+		  
+		  svg.append("g")
+			.attr("class", "y axis")
+			.attr("transform", "translate(" + bbVis.x + "," + (bbVis.y + bbVis.h) + ")")
+			.call(yAxis);
+			
+		  svg.append("g")
+			.attr("class", "x axis")
+			.attr("transform", "translate(" + bbVis.x + "," + (bbVis.h + bbVis.h) + ")")
+			.call(xAxis);
 //        // add y axis to svg !
+
+
 
 
     };
